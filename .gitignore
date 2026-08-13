@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+app-json.json
+object-range-report*.json
+object-range-report*.md
+.smoke-output/
