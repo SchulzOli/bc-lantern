@@ -62,6 +62,20 @@ bccli app-json retrieve --no-cache
 gh auth login
 ```
 
+## Installation
+
+Install a released version from PyPI with an isolated application environment:
+
+```text
+pipx install bccli
+```
+
+For pipeline use, pin the package version:
+
+```text
+python -m pip install bccli==0.7.0
+```
+
 ## Install for development
 
 ```text
@@ -247,6 +261,9 @@ python -m pytest
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and pull-request
 workflow. Report security issues as described in [SECURITY.md](SECURITY.md).
+
+Release maintainers can follow the [PyPI publishing guide](docs/publishing.md)
+for the one-time Trusted Publisher setup and versioned release process.
 
 ## License
 

@@ -1,0 +1,72 @@
+name: Release to PyPI
+
+on:
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        name: Test and build distributions
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+                  cache: pip
+            - name: Install development tools
+              run: python -m pip install ".[dev]"
+            - name: Verify tag matches package version
+              shell: python
+              run: |
+                  import os
+                  import pathlib
+                  import tomllib
+
+                  tag_version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+                  project = tomllib.loads(
+                      pathlib.Path("pyproject.toml").read_text(encoding="utf-8")
+                  )["project"]
+                  if project["version"] != tag_version:
+                      raise SystemExit(
+                          f"Tag version {tag_version!r} does not match "
+                          f"project version {project['version']!r}"
+                      )
+            - run: python -m pytest
+            - run: bccli docs sync --check
+            - name: Build distributions
+              run: python -m build
+            - name: Check distribution metadata
+              run: python -m twine check dist/*
+            - name: Test the built wheel
+              run: |
+                  python -m pip install --force-reinstall dist/*.whl
+                  bccli --help
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: python-package-distributions
+                  path: dist/
+                  if-no-files-found: error
+
+    publish:
+        name: Publish distributions
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: pypi
+            url: https://pypi.org/project/bccli/
+        permissions:
+            id-token: write
+
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  name: python-package-distributions
+                  path: dist/
+            - name: Publish distributions to PyPI
+              uses: pypa/gh-action-pypi-publish@v1.14.2
