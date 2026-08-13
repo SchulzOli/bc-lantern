@@ -23,4 +23,4 @@ jobs:
                   cache: pip
             - run: python -m pip install -e ".[dev]"
             - run: python -m pytest
-            - run: bccli docs sync --check
+            - run: bcl docs sync --check

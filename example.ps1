@@ -10,15 +10,15 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $ProjectRoot = $PSScriptRoot
 
-function Invoke-Bccli {
+function Invoke-Bcl {
     param(
         [Parameter(Mandatory = $true)]
         [string[]] $Arguments
     )
 
-    & bccli @Arguments
+    & bcl @Arguments
     if ($LASTEXITCODE -ne 0) {
-        throw "bccli failed with exit code $LASTEXITCODE`: bccli $($Arguments -join ' ')"
+        throw "bcl failed with exit code $LASTEXITCODE`: bcl $($Arguments -join ' ')"
     }
 }
 
@@ -30,7 +30,7 @@ Push-Location $ProjectRoot
 try {
     # Rebuild the aggregate from the current remote state of all eligible
     # non-archived repositories owned by the selected GitHub owner.
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'app-json', 'retrieve',
         '--owner', $Owner,
         '--output', 'app-json.json',
@@ -39,7 +39,7 @@ try {
 
     # Standard report as JSON. Customization (50000..99999) is removed from
     # the complete comparison domain, including conflicts and outside reference.
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'object-ranges', 'report',
         '--app-json', 'app-json.json',
         '--reference', $Reference,
@@ -49,7 +49,7 @@ try {
     )
 
     # The same standard report as Markdown.
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'object-ranges', 'report',
         '--app-json', 'app-json.json',
         '--reference', $Reference,
@@ -59,7 +59,7 @@ try {
     )
 
     # Additional filtered JSON examples.
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'object-ranges', 'report',
         '--app-json', 'app-json.json',
         '--reference', $Reference,
@@ -68,7 +68,7 @@ try {
         '--hide-range-type', 'rsp'
     )
 
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'object-ranges', 'report',
         '--app-json', 'app-json.json',
         '--reference', $Reference,
@@ -78,7 +78,7 @@ try {
         '--ignore-range-type', 'app'
     )
 
-    Invoke-Bccli @(
+    Invoke-Bcl @(
         'object-ranges', 'report',
         '--app-json', 'app-json.json',
         '--reference', $Reference,
@@ -114,7 +114,7 @@ try {
     Get-Content -LiteralPath 'object-range-report-ignore-rsp-app.json' -Raw | ConvertFrom-Json | Out-Null
     Get-Content -LiteralPath 'object-range-report-all-conflicts.json' -Raw | ConvertFrom-Json | Out-Null
 
-    Write-Host 'All BCCLI output files were recreated and validated.'
+    Write-Host 'All BC Lantern output files were recreated and validated.'
     $Outputs | ForEach-Object { Write-Host "  $((Resolve-Path -LiteralPath $_).Path)" }
 }
 finally {

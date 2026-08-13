@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">BC Lantern</title>
+  <desc id="desc">A two-color lantern with a command-line prompt.</desc>
+  <path fill="#008272" d="M168 152v-16c0-64 36-104 88-104s88 40 88 104v16h-40v-16c0-40-18-64-48-64s-48 24-48 64v16z"/>
+  <path fill="#00B7C3" d="M190 232h132l24 152H166z"/>
+  <path fill="#008272" fill-rule="evenodd" d="M152 168h208l48 280H104zm38 64-24 152h180l-24-152z"/>
+  <path fill="#008272" d="M144 136h224v64H144zM88 424h336v56H88zM202 278l48 34-48 34v-25l13-9-13-9zm56 52h52v24h-52z"/>
+</svg>

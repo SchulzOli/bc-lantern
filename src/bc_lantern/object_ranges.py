@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from bccli.json_io import write_json_atomic, write_text_atomic
+from bc_lantern.json_io import write_json_atomic, write_text_atomic
 
 REPORT_SCHEMA_VERSION = 4
 
@@ -85,7 +85,7 @@ def create_object_range_report(
     reference_document = _read_json(reference_file)
     declared = _read_declared_ranges(manifests_document)
     effective_declared = [item for item in declared if item.range_type not in ignored]
-    groups, _ = _read_reference_groups(reference_document)
+    groups = _read_reference_groups(reference_document)
     _validate_non_overlapping_reference_groups(groups)
     reference_range_count = sum(
         1
@@ -574,14 +574,10 @@ def _validate_non_overlapping_reference_groups(
 
 def _read_reference_groups(
     document: Any,
-) -> tuple[
-    list[tuple[str, list[Interval], list[Interval]]],
-    list[Interval],
-]:
+) -> list[tuple[str, list[Interval], list[Interval]]]:
     if not isinstance(document, dict):
         raise ObjectRangeDataError("reference input must be a JSON object")
     groups = []
-    all_ranges = []
     for group_name, value in document.items():
         if not isinstance(group_name, str) or not isinstance(value, dict):
             raise ObjectRangeDataError("each reference group must be an object")
@@ -591,8 +587,7 @@ def _read_reference_groups(
             f"{group_name}.restricted_table_use",
         )
         groups.append((group_name, ranges, restricted))
-        all_ranges.extend(ranges)
-    return groups, _merge_intervals(all_ranges)
+    return groups
 
 
 def _parse_interval_array(value: Any, context: str) -> list[Interval]:

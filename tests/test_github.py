@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from bccli.github import GhClient, Repository, RepositoryFile, TruncatedTreeError
+from bc_lantern.github import GhClient, Repository, RepositoryFile, TruncatedTreeError
 
 
 def completed(args: list[str], stdout: str) -> subprocess.CompletedProcess[str]:

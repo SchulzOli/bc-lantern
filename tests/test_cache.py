@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bccli.cache import JsonCacheStore
+from bc_lantern.cache import JsonCacheStore
 
 
 def test_json_cache_store_persists_namespaced_values(tmp_path: Path) -> None:

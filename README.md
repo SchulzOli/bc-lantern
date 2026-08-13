@@ -1,6 +1,6 @@
-# BCCLI
+# BC Lantern
 
-BCCLI is a Python command-line tool for Microsoft Dynamics 365 Business Central
+BC Lantern is a Python command-line toolbox for Microsoft Dynamics 365 Business Central
 and AL projects.
 
 It can:
@@ -29,22 +29,22 @@ The authenticated account controls access to private repositories.
 
 ### Install from PyPI
 
-Use `pipx` to install BCCLI in an isolated environment:
+Use `pipx` to install BC Lantern in an isolated environment:
 
 ```text
-pipx install bccli
+pipx install bc-lantern
 ```
 
 You can also use pip:
 
 ```text
-python -m pip install bccli
+python -m pip install bc-lantern
 ```
 
 Upgrade an existing installation:
 
 ```text
-pipx upgrade bccli
+pipx upgrade bc-lantern
 ```
 
 ### Install from GitHub
@@ -52,7 +52,7 @@ pipx upgrade bccli
 Install a specific release tag before or without a PyPI release:
 
 ```text
-python -m pip install "bccli @ git+https://github.com/SchulzOli/BCCLI.git@v0.7.0"
+python -m pip install "bc-lantern @ git+https://github.com/SchulzOli/bc-lantern.git@v0.7.0"
 ```
 
 Use a tag or full commit SHA in automated builds. Do not install from `main` in
@@ -61,7 +61,7 @@ a reproducible pipeline.
 Verify the installation:
 
 ```text
-bccli --help
+bcl --help
 ```
 
 ## Quick start
@@ -71,18 +71,18 @@ bccli --help
 Collect manifests from the repositories of the authenticated GitHub account:
 
 ```text
-bccli app-json retrieve
+bcl app-json retrieve
 ```
 
 Collect manifests from a specified user or organization:
 
 ```text
-bccli app-json retrieve \
+bcl app-json retrieve \
   --owner my-organization \
   --output app-json.json
 ```
 
-BCCLI excludes archived repositories by default. Add `--include-archived` to
+BC Lantern excludes archived repositories by default. Add `--include-archived` to
 include them.
 
 The command writes one aggregate JSON file. It does not create repository
@@ -109,7 +109,7 @@ Allocation ranges are inclusive. Reference allocations must not overlap.
 Compare the collected manifests with the allocation file:
 
 ```text
-bccli object-ranges report \
+bcl object-ranges report \
   --app-json app-json.json \
   --reference object_ranges.json \
   --output object-range-report.json
@@ -118,7 +118,7 @@ bccli object-ranges report \
 Create a Markdown report:
 
 ```text
-bccli object-ranges report \
+bcl object-ranges report \
   --reference object_ranges.json \
   --output object-range-report.md \
   --output-format markdown
@@ -132,7 +132,7 @@ implemented object IDs.
 
 ## Range filters
 
-BCCLI classifies declared ranges with these Business Central categories:
+BC Lantern classifies declared ranges with these Business Central categories:
 
 | Type | Inclusive IDs |
 |---|---:|
@@ -146,7 +146,7 @@ BCCLI classifies declared ranges with these Business Central categories:
 Hide a category from report details but keep it in calculations:
 
 ```text
-bccli object-ranges report \
+bcl object-ranges report \
   --reference object_ranges.json \
   --hide-range-type rsp
 ```
@@ -154,7 +154,7 @@ bccli object-ranges report \
 Remove a category from all calculations:
 
 ```text
-bccli object-ranges report \
+bcl object-ranges report \
   --reference object_ranges.json \
   --ignore-range-type customization
 ```
@@ -167,30 +167,30 @@ See the [CLI reference](docs/cli-reference.md) for every command and option.
 
 ## Cache
 
-BCCLI caches GitHub metadata and manifests by default:
+BC Lantern caches GitHub metadata and manifests by default:
 
 ```text
-Windows: %LOCALAPPDATA%\bccli\cache
-macOS:   ~/Library/Caches/bccli
-Linux:   ${XDG_CACHE_HOME:-~/.cache}/bccli
+Windows: %LOCALAPPDATA%\bc-lantern\cache
+macOS:   ~/Library/Caches/bc-lantern
+Linux:   ${XDG_CACHE_HOME:-~/.cache}/bc-lantern
 ```
 
 Force a complete scan:
 
 ```text
-bccli app-json retrieve --refresh
+bcl app-json retrieve --refresh
 ```
 
 Disable the cache:
 
 ```text
-bccli app-json retrieve --no-cache
+bcl app-json retrieve --no-cache
 ```
 
 Set another cache directory:
 
 ```text
-bccli app-json retrieve --cache-dir path/to/cache
+bcl app-json retrieve --cache-dir path/to/cache
 ```
 
 ## Pipeline example
@@ -205,10 +205,10 @@ steps:
     with:
       python-version: "3.13"
 
-  - run: python -m pip install bccli==0.7.0
+  - run: python -m pip install bc-lantern==0.7.0
 
   - run: >-
-      bccli object-ranges report
+      bcl object-ranges report
       --app-json app-json.json
       --reference object_ranges.json
       --output object-range-report.json
@@ -247,10 +247,10 @@ python -m pytest
 Check the generated CLI reference:
 
 ```text
-bccli docs sync --check
+bcl docs sync --check
 ```
 
-Use `bccli docs sync` after you change a command or option.
+Use `bcl docs sync` after you change a command or option.
 
 ## Project information
 

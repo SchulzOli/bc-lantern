@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Any, Protocol
 
-from bccli.json_io import write_json_atomic
+from bc_lantern.json_io import write_json_atomic
 
 CacheValue = dict[str, Any]
 

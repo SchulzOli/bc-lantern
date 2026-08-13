@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
-from bccli.cache import CacheStore
-from bccli.github import Repository, RepositoryFile
-from bccli.incremental import plan_incremental
-from bccli.json_io import write_json_atomic
+from bc_lantern.cache import CacheStore
+from bc_lantern.github import Repository, RepositoryFile
+from bc_lantern.incremental import plan_incremental
+from bc_lantern.json_io import write_json_atomic
 
 CACHE_NAMESPACE = "github/app-json/v3"
 CACHE_SCHEMA_VERSION = 2

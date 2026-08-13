@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bccli.object_ranges import (
+from bc_lantern.object_ranges import (
     Interval,
     ObjectRangeDataError,
     _merge_intervals,

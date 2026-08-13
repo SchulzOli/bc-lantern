@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 from typing import Protocol, Sequence
 
-from bccli.app_json import InvalidAppJsonError, GitHubClient, retrieve_app_json
-from bccli.cache import CacheStore, JsonCacheStore
-from bccli.cli_docs import sync_cli_reference
-from bccli.github import GhClient, TruncatedTreeError
-from bccli.object_ranges import (
+from bc_lantern.app_json import InvalidAppJsonError, GitHubClient, retrieve_app_json
+from bc_lantern.cache import CacheStore, JsonCacheStore
+from bc_lantern.cli_docs import sync_cli_reference
+from bc_lantern.github import GhClient, TruncatedTreeError
+from bc_lantern.object_ranges import (
     DEFAULT_CONFLICT_RANGE_TYPES,
     RANGE_TYPES,
     ObjectRangeDataError,
@@ -26,10 +26,10 @@ class CliGitHubClient(GitHubClient, Protocol):
 def default_cache_directory() -> Path:
     if sys.platform == "win32":
         base = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
-        return base / "bccli" / "cache"
+        return base / "bc-lantern" / "cache"
     if sys.platform == "darwin":
-        return Path.home() / "Library" / "Caches" / "bccli"
-    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "bccli"
+        return Path.home() / "Library" / "Caches" / "bc-lantern"
+    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "bc-lantern"
 
 
 def build_parser() -> argparse.ArgumentParser:

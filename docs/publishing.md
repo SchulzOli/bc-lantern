@@ -1,11 +1,11 @@
-# Publishing BCCLI to PyPI
+# Publishing BC Lantern to PyPI
 
-BCCLI uses PyPI Trusted Publishing through GitHub Actions. No PyPI API token is
+BC Lantern uses PyPI Trusted Publishing through GitHub Actions. No PyPI API token is
 stored in GitHub.
 
 ## One-time setup
 
-1. Make `SchulzOli/BCCLI` public on GitHub.
+1. Make `SchulzOli/bc-lantern` public on GitHub.
 2. Create a PyPI account, verify its email address, and enable two-factor
    authentication.
 3. In the GitHub repository, open **Settings > Environments**, create an
@@ -16,9 +16,9 @@ stored in GitHub.
 
 | Field | Value |
 |---|---|
-| PyPI project name | `bccli` |
+| PyPI project name | `bc-lantern` |
 | GitHub owner | `SchulzOli` |
-| GitHub repository | `BCCLI` |
+| GitHub repository | `bc-lantern` |
 | Workflow name | `release.yml` |
 | Environment name | `pypi` |
 
@@ -33,7 +33,7 @@ the workflow publishes successfully for the first time.
    ```text
    python -m pip install -e ".[dev]"
    python -m pytest
-   bccli docs sync --check
+   bcl docs sync --check
    python -m build
    python -m twine check dist/*
    ```
@@ -42,7 +42,7 @@ the workflow publishes successfully for the first time.
 4. Create and push a matching tag:
 
    ```text
-   git tag -a v0.7.0 -m "BCCLI 0.7.0"
+   git tag -a v0.7.0 -m "BC Lantern 0.7.0"
    git push origin v0.7.0
    ```
 
@@ -56,8 +56,8 @@ version before retrying after any successful upload.
 Pin the released version for reproducible builds:
 
 ```text
-python -m pip install bccli==0.7.0
-bccli --help
+python -m pip install bc-lantern==0.7.0
+bcl --help
 ```
 
 ## References

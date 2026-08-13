@@ -4,13 +4,13 @@ import argparse
 from pathlib import Path
 from typing import Iterable
 
-from bccli.json_io import write_text_atomic
+from bc_lantern.json_io import write_text_atomic
 
 
 def render_cli_reference(parser: argparse.ArgumentParser | None = None) -> str:
     """Render deterministic Markdown from the same argparse tree used by the CLI."""
     if parser is None:
-        from bccli.cli import build_parser
+        from bc_lantern.cli import build_parser
 
         parser = build_parser()
 

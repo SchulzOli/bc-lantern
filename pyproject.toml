@@ -3,9 +3,9 @@ requires = ["hatchling>=1.26"]
 build-backend = "hatchling.build"
 
 [project]
-name = "bccli"
+name = "bc-lantern"
 version = "0.7.0"
-description = "Small Business Central / AL command-line helpers"
+description = "A growing toolbox for Business Central and AL projects"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -30,16 +30,16 @@ dependencies = []
 dev = ["build>=1.2", "pytest>=8", "twine>=6"]
 
 [project.urls]
-Homepage = "https://github.com/SchulzOli/BCCLI"
-Documentation = "https://github.com/SchulzOli/BCCLI#readme"
-Issues = "https://github.com/SchulzOli/BCCLI/issues"
-Source = "https://github.com/SchulzOli/BCCLI"
+Homepage = "https://github.com/SchulzOli/bc-lantern"
+Documentation = "https://github.com/SchulzOli/bc-lantern#readme"
+Issues = "https://github.com/SchulzOli/bc-lantern/issues"
+Source = "https://github.com/SchulzOli/bc-lantern"
 
 [project.scripts]
-bccli = "bccli.cli:main"
+bcl = "bc_lantern.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/bccli"]
+packages = ["src/bc_lantern"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

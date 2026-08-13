@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bccli.incremental import plan_incremental
+from bc_lantern.incremental import plan_incremental
 
 
 def test_plan_incremental_splits_changed_unchanged_and_removed_items() -> None:

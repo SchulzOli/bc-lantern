@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from bccli.cache import JsonCacheStore
-from bccli.cli import main
-from bccli.github import Repository, RepositoryFile
+from bc_lantern.cache import JsonCacheStore
+from bc_lantern.cli import main
+from bc_lantern.github import Repository, RepositoryFile, TruncatedTreeError
 
 
 class RecordingClient:
@@ -80,6 +80,34 @@ def test_cli_uses_injected_cache_and_reports_incremental_stats(
     assert "Repositories from cache: 1" in output
     assert "app.json files downloaded: 0" in output
     assert "app.json files unchanged: 1" in output
+
+
+def test_cli_reports_truncated_github_tree_without_traceback(
+    tmp_path: Path, capsys: object
+) -> None:
+    class TruncatedTreeClient(RecordingClient):
+        def find_app_json_files(
+            self, repository: Repository
+        ) -> list[RepositoryFile]:
+            raise TruncatedTreeError(
+                f"GitHub returned a truncated tree for {repository.name_with_owner}"
+            )
+
+    exit_code = main(
+        [
+            "app-json",
+            "retrieve",
+            "--include-archived",
+            "--no-cache",
+            "--output",
+            str(tmp_path / "app-json.json"),
+        ],
+        client=TruncatedTreeClient(),
+    )
+
+    assert exit_code == 1
+    error = capsys.readouterr().err
+    assert "Error: GitHub returned a truncated tree" in error
 
 
 def test_cli_reports_missing_object_range_input_as_a_file_error(

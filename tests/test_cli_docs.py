@@ -2,22 +2,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from bccli.cli import build_parser, main
-from bccli.cli_docs import render_cli_reference
+from bc_lantern.cli import build_parser, main
+from bc_lantern.cli_docs import render_cli_reference
 
 
 def test_rendered_reference_contains_every_command_and_filter_option() -> None:
     document = render_cli_reference()
 
-    assert "# BCCLI command reference" in document
+    assert "# BC Lantern command reference" in document
     assert str(Path.home()) not in document
-    assert "## `bccli app-json retrieve`" in document
+    assert "## `bcl app-json retrieve`" in document
     assert "`--include-archived`" in document
-    assert "## `bccli object-ranges report`" in document
+    assert "## `bcl object-ranges report`" in document
     assert "`--hide-range-type TYPE`" in document
     assert "`--ignore-range-type TYPE`" in document
     assert "`--conflict-range-type TYPE`" in document
-    assert "## `bccli docs sync`" in document
+    assert "## `bcl docs sync`" in document
     assert "`--check`" in document
 
 

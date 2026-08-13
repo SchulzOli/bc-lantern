@@ -4,9 +4,9 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from bccli.app_json import retrieve_app_json
-from bccli.cache import JsonCacheStore
-from bccli.github import Repository, RepositoryFile
+from bc_lantern.app_json import retrieve_app_json
+from bc_lantern.cache import JsonCacheStore
+from bc_lantern.github import Repository, RepositoryFile
 
 
 @dataclass
