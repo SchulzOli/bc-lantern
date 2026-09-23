@@ -69,10 +69,27 @@ def create_object_range_report(
     conflict_range_types: set[str] | None = None,
     output_format: str = "json",
 ) -> ObjectRangeReportResult:
-    if output_format not in {"json", "markdown"}:
-        raise ObjectRangeDataError(
-            "output format must be one of: json, markdown"
-        )
+    _validate_output_format(output_format)
+    report, result = build_object_range_report(
+        manifests_file,
+        reference_file,
+        hidden_range_types=hidden_range_types,
+        ignored_range_types=ignored_range_types,
+        conflict_range_types=conflict_range_types,
+    )
+    write_object_range_report(report, output_file, output_format=output_format)
+    return result
+
+
+def build_object_range_report(
+    manifests_file: Path,
+    reference_file: Path,
+    *,
+    hidden_range_types: set[str] | None = None,
+    ignored_range_types: set[str] | None = None,
+    conflict_range_types: set[str] | None = None,
+) -> tuple[dict[str, Any], ObjectRangeReportResult]:
+    """Analyze the inputs once and return the report document with its summary."""
     hidden = _validate_range_types(hidden_range_types or set(), "hidden")
     ignored = _validate_range_types(ignored_range_types or set(), "ignored")
     conflict_types = _validate_range_types(
@@ -217,11 +234,7 @@ def create_object_range_report(
         "conflicts": conflicts,
         "outside_reference": outside_reference,
     }
-    if output_format == "json":
-        write_json_atomic(output_file, report, sort_keys=False)
-    else:
-        write_text_atomic(output_file, _render_markdown_report(report))
-    return ObjectRangeReportResult(
+    result = ObjectRangeReportResult(
         reference_ranges=reference_range_count,
         typed_reference_segments=typed_reference_segment_count,
         declared_ranges=declared_range_count,
@@ -233,6 +246,26 @@ def create_object_range_report(
         outside_declarations=outside_declaration_count,
         outside_reference=outside_reference_count,
     )
+    return report, result
+
+
+def write_object_range_report(
+    report: dict[str, Any],
+    output_file: Path,
+    *,
+    output_format: str = "json",
+) -> None:
+    """Write an already analyzed report document in the requested format."""
+    _validate_output_format(output_format)
+    if output_format == "json":
+        write_json_atomic(output_file, report, sort_keys=False)
+    else:
+        write_text_atomic(output_file, _render_markdown_report(report))
+
+
+def _validate_output_format(output_format: str) -> None:
+    if output_format not in {"json", "markdown"}:
+        raise ObjectRangeDataError("output format must be one of: json, markdown")
 
 
 def _render_markdown_report(report: dict[str, Any]) -> str:

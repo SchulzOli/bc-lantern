@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Protocol, Sequence
 
+from bc_lantern import __version__
 from bc_lantern.app_json import InvalidAppJsonError, GitHubClient, retrieve_app_json
 from bc_lantern.cache import CacheStore, JsonCacheStore
 from bc_lantern.cli_docs import sync_cli_reference
@@ -15,7 +16,8 @@ from bc_lantern.object_ranges import (
     DEFAULT_CONFLICT_RANGE_TYPES,
     RANGE_TYPES,
     ObjectRangeDataError,
-    create_object_range_report,
+    build_object_range_report,
+    write_object_range_report,
 )
 
 
@@ -35,6 +37,13 @@ def default_cache_directory() -> Path:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="bcl", description="BC Lantern tools for Business Central and AL"
+    )
+    parser.add_argument(
+        "--version",
+        "-V",
+        action="version",
+        version=f"bcl {__version__}",
+        help="Print the installed BC Lantern version and exit",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     app_json = commands.add_parser(
@@ -105,14 +114,30 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument(
         "--output",
         type=Path,
-        default=Path("object-range-report.json"),
-        help="Report output file (default: ./object-range-report.json)",
+        default=None,
+        help=(
+            "Report output file for --output-format "
+            "(default: ./object-range-report.json when no format-specific "
+            "output option is used)"
+        ),
     )
     report.add_argument(
         "--output-format",
         choices=("json", "markdown"),
         default="json",
-        help="Report format: json or markdown (default: json)",
+        help="Format of the --output file: json or markdown (default: json)",
+    )
+    report.add_argument(
+        "--json-output",
+        type=Path,
+        default=None,
+        help="Additional JSON report file written from the same analysis",
+    )
+    report.add_argument(
+        "--markdown-output",
+        type=Path,
+        default=None,
+        help="Additional Markdown report file written from the same analysis",
     )
     report.add_argument(
         "--hide-range-type",
@@ -172,6 +197,23 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+DEFAULT_REPORT_OUTPUT = Path("object-range-report.json")
+
+
+def _report_targets(args: argparse.Namespace) -> list[tuple[Path, str]]:
+    """Resolve every report file to write, keeping one analysis for all formats."""
+    targets: list[tuple[Path, str]] = []
+    if args.output is not None:
+        targets.append((args.output, args.output_format))
+    if args.json_output is not None:
+        targets.append((args.json_output, "json"))
+    if args.markdown_output is not None:
+        targets.append((args.markdown_output, "markdown"))
+    if not targets:
+        targets.append((DEFAULT_REPORT_OUTPUT, args.output_format))
+    return targets
+
+
 def main(
     argv: Sequence[str] | None = None,
     *,
@@ -209,10 +251,10 @@ def main(
             return 0
 
         if args.command == "object-ranges" and args.object_ranges_command == "report":
-            result = create_object_range_report(
+            targets = _report_targets(args)
+            report, result = build_object_range_report(
                 args.app_json,
                 args.reference,
-                args.output,
                 hidden_range_types=set(args.hide_range_type),
                 ignored_range_types=set(args.ignore_range_type),
                 conflict_range_types=(
@@ -220,8 +262,11 @@ def main(
                     if args.conflict_range_type is None
                     else set(args.conflict_range_type)
                 ),
-                output_format=args.output_format,
             )
+            for path, output_format in targets:
+                write_object_range_report(
+                    report, path, output_format=output_format
+                )
             print(f"Reference ranges: {result.reference_ranges}")
             print(f"Typed reference segments: {result.typed_reference_segments}")
             print(f"Declared ranges: {result.declared_ranges}")
@@ -232,7 +277,8 @@ def main(
             print(f"Conflicts: {result.conflicts}")
             print(f"Outside declarations: {result.outside_declarations}")
             print(f"Outside-reference segments: {result.outside_reference}")
-            print(f"Output file: {args.output.resolve()}")
+            for path, output_format in targets:
+                print(f"Output file ({output_format}): {path.resolve()}")
             return 0
 
         if args.command == "docs" and args.docs_command == "sync":

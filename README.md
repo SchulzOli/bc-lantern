@@ -52,7 +52,7 @@ pipx upgrade bc-lantern
 Install a specific release tag before or without a PyPI release:
 
 ```text
-python -m pip install "bc-lantern @ git+https://github.com/SchulzOli/bc-lantern.git@v0.7.0"
+python -m pip install "bc-lantern @ git+https://github.com/SchulzOli/bc-lantern.git@v0.8.0"
 ```
 
 Use a tag or full commit SHA in automated builds. Do not install from `main` in
@@ -61,8 +61,16 @@ a reproducible pipeline.
 Verify the installation:
 
 ```text
-bcl --help
+bcl --version
 ```
+
+`bcl --version` and `bcl -V` print the installed version and exit with status 0.
+
+### Distribution channels
+
+PyPI is the only supported package registry. BC Lantern is not published on npm.
+GitHub workflows use the bundled composite action described in
+[GitHub Actions](#github-actions), which installs a pinned PyPI release.
 
 ## Quick start
 
@@ -124,8 +132,20 @@ bcl object-ranges report \
   --output-format markdown
 ```
 
-`--app-json` defaults to `app-json.json`. The JSON output defaults to
-`object-range-report.json`.
+Create both formats from one analysis:
+
+```text
+bcl object-ranges report \
+  --reference object_ranges.json \
+  --json-output object-range-report.json \
+  --markdown-output object-range-report.md
+```
+
+`--json-output` and `--markdown-output` read and analyze the inputs once. Use
+`--output` with `--output-format` for a single file.
+
+`--app-json` defaults to `app-json.json`. Without an output option, the report
+is written to `object-range-report.json`.
 
 The report compares declared reservations. It does not scan AL source files for
 implemented object IDs.
@@ -193,9 +213,63 @@ Set another cache directory:
 bcl app-json retrieve --cache-dir path/to/cache
 ```
 
-## Pipeline example
+## GitHub Actions
 
-Pin the package version in a pipeline:
+### Bundled composite action
+
+This repository ships an official composite action. It installs a pinned PyPI
+release, retrieves the manifests, and writes both report formats:
+
+```yaml
+name: Object range report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1"
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: SchulzOli/bc-lantern@v0.8.0
+        id: lantern
+        with:
+          owner: my-organization
+          reference: object_ranges.json
+          json-output: object-range-report.json
+          markdown-output: object-range-report.md
+          github-token: ${{ secrets.BC_LANTERN_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: object-range-report
+          path: |
+            ${{ steps.lantern.outputs.json-report }}
+            ${{ steps.lantern.outputs.markdown-report }}
+```
+
+### Token scopes
+
+`bcl app-json retrieve` uses GitHub CLI and reads `GH_TOKEN`. The automatic
+`GITHUB_TOKEN` of a workflow is limited to the current repository. It usually
+cannot enumerate and read all repositories of an organization, so a run can
+succeed and still produce an incomplete report.
+
+Use one of these tokens instead:
+
+- a GitHub App installation token with `Contents: read` and `Metadata: read` for
+  every intended repository;
+- a personal access token with read access to every intended repository.
+
+Store the token as a secret and pass it as `github-token`, or as `GH_TOKEN` when
+you call the CLI directly.
+
+### Direct CLI workflow
+
+Use the CLI without the composite action:
 
 ```yaml
 steps:
@@ -205,17 +279,35 @@ steps:
     with:
       python-version: "3.13"
 
-  - run: python -m pip install bc-lantern==0.7.0
+  - run: python -m pip install bc-lantern==0.8.0
 
-  - run: >-
+  - run: bcl --version
+
+  - name: Retrieve manifests
+    env:
+      GH_TOKEN: ${{ secrets.BC_LANTERN_TOKEN }}
+    run: >-
+      bcl app-json retrieve
+      --owner my-organization
+      --output app-json.json
+
+  - name: Create reports
+    run: >-
       bcl object-ranges report
       --app-json app-json.json
       --reference object_ranges.json
-      --output object-range-report.json
+      --json-output object-range-report.json
+      --markdown-output object-range-report.md
+
+  - uses: actions/upload-artifact@v4
+    with:
+      name: object-range-report
+      path: |
+        object-range-report.json
+        object-range-report.md
 ```
 
-The pipeline must provide `app-json.json` and `object_ranges.json`. Alternatively,
-run `app-json retrieve` first and authenticate GitHub CLI in the pipeline.
+Skip the retrieval step when the workflow already provides `app-json.json`.
 
 ## PowerShell example
 

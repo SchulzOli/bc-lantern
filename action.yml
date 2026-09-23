@@ -1,0 +1,122 @@
+name: BC Lantern object-range report
+description: >-
+  Collect Business Central app.json manifests from GitHub and create an
+  object-range report as JSON, Markdown, or both.
+branding:
+  icon: search
+  color: blue
+
+inputs:
+  version:
+    description: BC Lantern version to install from PyPI.
+    required: false
+    default: 0.8.0
+  python-version:
+    description: Python version used to run BC Lantern.
+    required: false
+    default: "3.13"
+  owner:
+    description: >-
+      GitHub user or organization to scan. Leave empty to skip retrieval and
+      use an existing app.json aggregate.
+    required: false
+    default: ""
+  include-archived:
+    description: Include archived repositories during retrieval.
+    required: false
+    default: "false"
+  app-json:
+    description: Aggregate app.json file that is written and then analyzed.
+    required: false
+    default: app-json.json
+  reference:
+    description: Reference object_ranges.json with the named allocated ranges.
+    required: true
+  json-output:
+    description: JSON report file. Leave empty to skip the JSON report.
+    required: false
+    default: object-range-report.json
+  markdown-output:
+    description: Markdown report file. Leave empty to skip the Markdown report.
+    required: false
+    default: object-range-report.md
+  report-args:
+    description: >-
+      Additional arguments for 'bcl object-ranges report', for example
+      '--ignore-range-type customization'.
+    required: false
+    default: ""
+  github-token:
+    description: >-
+      Token for GitHub CLI. The automatic GITHUB_TOKEN usually cannot read every
+      private repository of an organization. Supply a GitHub App token or a PAT
+      with read access to all intended repositories.
+    required: false
+    default: ""
+
+outputs:
+  app-json:
+    description: Path of the aggregate app.json file.
+    value: ${{ inputs.app-json }}
+  json-report:
+    description: Path of the generated JSON report, or empty when not requested.
+    value: ${{ inputs.json-output }}
+  markdown-report:
+    description: Path of the generated Markdown report, or empty when not requested.
+    value: ${{ inputs.markdown-output }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install BC Lantern
+      shell: bash
+      env:
+        BCL_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        python -m pip install --disable-pip-version-check "bc-lantern==${BCL_VERSION}"
+        bcl --version
+
+    - name: Retrieve app.json manifests
+      if: inputs.owner != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BCL_OWNER: ${{ inputs.owner }}
+        BCL_APP_JSON: ${{ inputs.app-json }}
+        BCL_INCLUDE_ARCHIVED: ${{ inputs.include-archived }}
+      run: |
+        set -euo pipefail
+        if [ -z "${GH_TOKEN}" ]; then
+          echo "::error::github-token is required when owner is set." >&2
+          exit 1
+        fi
+        args=(app-json retrieve --owner "${BCL_OWNER}" --output "${BCL_APP_JSON}")
+        if [ "${BCL_INCLUDE_ARCHIVED}" = "true" ]; then
+          args+=(--include-archived)
+        fi
+        bcl "${args[@]}"
+
+    - name: Create object-range report
+      shell: bash
+      env:
+        BCL_APP_JSON: ${{ inputs.app-json }}
+        BCL_REFERENCE: ${{ inputs.reference }}
+        BCL_JSON_OUTPUT: ${{ inputs.json-output }}
+        BCL_MARKDOWN_OUTPUT: ${{ inputs.markdown-output }}
+        BCL_REPORT_ARGS: ${{ inputs.report-args }}
+      run: |
+        set -euo pipefail
+        args=(object-ranges report --app-json "${BCL_APP_JSON}" --reference "${BCL_REFERENCE}")
+        if [ -n "${BCL_JSON_OUTPUT}" ]; then
+          args+=(--json-output "${BCL_JSON_OUTPUT}")
+        fi
+        if [ -n "${BCL_MARKDOWN_OUTPUT}" ]; then
+          args+=(--markdown-output "${BCL_MARKDOWN_OUTPUT}")
+        fi
+        read -r -a extra_args <<< "${BCL_REPORT_ARGS}"
+        bcl "${args[@]}" ${extra_args[@]+"${extra_args[@]}"}

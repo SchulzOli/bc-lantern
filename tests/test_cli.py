@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from bc_lantern import __version__
 from bc_lantern.cache import JsonCacheStore
 from bc_lantern.cli import main
 from bc_lantern.github import Repository, RepositoryFile, TruncatedTreeError
@@ -227,6 +230,70 @@ def test_cli_writes_markdown_object_range_report(tmp_path: Path) -> None:
     assert report.read_text(encoding="utf-8").startswith(
         "# Business Central object-range report"
     )
+
+
+@pytest.mark.parametrize("flag", ["--version", "-V"])
+def test_cli_prints_the_installed_version_and_exits_zero(
+    flag: str, capsys: object
+) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        main([flag])
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out.strip() == f"bcl {__version__}"
+
+
+def test_cli_writes_json_and_markdown_reports_from_one_invocation(
+    tmp_path: Path, capsys: object
+) -> None:
+    manifests = tmp_path / "app-json.json"
+    reference = tmp_path / "reference.json"
+    json_report = tmp_path / "report.json"
+    markdown_report = tmp_path / "report.md"
+    manifests.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "manifests": [
+                    {
+                        "repository": "acme/app",
+                        "path": "app.json",
+                        "app_json": {"idRanges": [{"from": 50000, "to": 50000}]},
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    reference.write_text(
+        json.dumps({"Team": {"ranges": [{"from": 50000, "to": 50001}]}}),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "object-ranges",
+            "report",
+            "--app-json",
+            str(manifests),
+            "--reference",
+            str(reference),
+            "--json-output",
+            str(json_report),
+            "--markdown-output",
+            str(markdown_report),
+        ]
+    )
+
+    assert exit_code == 0
+    assert json.loads(json_report.read_text(encoding="utf-8"))["summary"]
+    assert markdown_report.read_text(encoding="utf-8").startswith(
+        "# Business Central object-range report"
+    )
+    assert not (tmp_path / "object-range-report.json").exists()
+    output = capsys.readouterr().out
+    assert f"Output file (json): {json_report.resolve()}" in output
+    assert f"Output file (markdown): {markdown_report.resolve()}" in output
 
 
 def test_cli_can_enable_customization_conflicts(tmp_path: Path) -> None:
