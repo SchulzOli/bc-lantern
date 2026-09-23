@@ -23,6 +23,7 @@ def render_cli_reference(parser: argparse.ArgumentParser | None = None) -> str:
         "names, options, defaults, choices, and help text stay synchronized with the CLI.",
         "",
     ]
+    sections.extend(_render_command(parser.prog, parser))
     for command, command_parser in _leaf_commands(parser, parser.prog):
         sections.extend(_render_command(command, command_parser))
     return "\n".join(sections).rstrip() + "\n"

@@ -5,6 +5,21 @@
 This file is generated from the live `argparse` command definitions, so command
 names, options, defaults, choices, and help text stay synchronized with the CLI.
 
+## `bcl`
+
+BC Lantern tools for Business Central and AL
+
+```text
+bcl [-h] [--version] {app-json,object-ranges,docs} ...
+```
+
+### Options
+
+| Option | Description |
+|---|---|
+| `-h, --help` | show this help message and exit |
+| `--version, -V` | Print the installed BC Lantern version and exit |
+
 ## `bcl app-json retrieve`
 
 ```text
@@ -29,6 +44,8 @@ bcl app-json retrieve [-h] [--owner OWNER] [--include-archived] [--output OUTPUT
 ```text
 bcl object-ranges report [-h] [--app-json APP_JSON] --reference REFERENCE
                                 [--output OUTPUT] [--output-format {json,markdown}]
+                                [--json-output JSON_OUTPUT]
+                                [--markdown-output MARKDOWN_OUTPUT]
                                 [--hide-range-type TYPE] [--ignore-range-type TYPE]
                                 [--conflict-range-type TYPE]
 ```
@@ -40,8 +57,10 @@ bcl object-ranges report [-h] [--app-json APP_JSON] --reference REFERENCE
 | `-h, --help` | show this help message and exit |
 | `--app-json APP_JSON` | Aggregate app.json input (default: ./app-json.json) |
 | `--reference REFERENCE` | Reference object_ranges.json containing named allocated ranges |
-| `--output OUTPUT` | Report output file (default: ./object-range-report.json) |
-| `--output-format OUTPUT_FORMAT` | Report format: json or markdown (default: json) Choices: json, markdown. |
+| `--output OUTPUT` | Report output file for --output-format (default: ./object-range-report.json when no format-specific output option is used) |
+| `--output-format OUTPUT_FORMAT` | Format of the --output file: json or markdown (default: json) Choices: json, markdown. |
+| `--json-output JSON_OUTPUT` | Additional JSON report file written from the same analysis |
+| `--markdown-output MARKDOWN_OUTPUT` | Additional Markdown report file written from the same analysis |
 | `--hide-range-type TYPE` | Hide a type's details but still count it as occupied; repeatable. Types: base, customization, localization, rsp, app, unclassified |
 | `--ignore-range-type TYPE` | Ignore a type in occupancy, conflicts, and free-range calculations; repeatable. Types: base, customization, localization, rsp, app, unclassified |
 | `--conflict-range-type TYPE` | Include a type in conflict detection; repeatable. Supplying any values replaces the default set. When omitted, all types except customization are conflicting. Default: base, localization, rsp, app, unclassified Choices: base, customization, localization, rsp, app, unclassified. |
